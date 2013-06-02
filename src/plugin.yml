@@ -1,0 +1,15 @@
+main: com.mythicacraft.registration
+name: Registration
+version: 0.1
+author: rockjolt375
+description: Allows users to register to forums via in-game commands
+commands:
+    register:
+        description: allows users to enter email and password
+        usage: /<command>
+    reg:
+        description: allows users to enter email and password
+        usage: /<command>
+permissions: 
+    register.registered:
+        description: Prevents registered members from re-registering
