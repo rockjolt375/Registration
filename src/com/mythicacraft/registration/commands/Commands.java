@@ -17,8 +17,6 @@ import com.mythicacraft.registration.Registration;
  */
 
 public class Commands implements CommandExecutor {
-
-	Boolean confirmed = false;
 	
 	public Registration plugin;
 
@@ -55,11 +53,14 @@ public class Commands implements CommandExecutor {
 		} //End commandLabel = reg or register
 		
 		if(commandLabel.equalsIgnoreCase("confirm")){ //If player confirms information, execute to PHP script
-			if(plugin.playerHash.containsKey(player)){
-			//Run php script shit
-			plugin.playerHash.remove(player);
-			confirmed = true;
-			return true;
+			if(plugin.emailHash.containsKey(player)){
+				//Run php script shit
+				sender.sendMessage("Test message for confirming action");
+				Bukkit.getServer().getScheduler().cancelTask(Integer.parseInt(plugin.taskIDHash.get(player)));
+				plugin.emailHash.remove(player);
+				plugin.passHash.remove(player);
+				plugin.taskIDHash.remove(player);
+				return true;
 			}
 			else{
 				sender.sendMessage(ChatColor.RED + "You do not have permissions to use this command");
@@ -67,11 +68,13 @@ public class Commands implements CommandExecutor {
 		}
 		
 		if(commandLabel.equalsIgnoreCase("cancel")){ //If player cancels process, restart.
-			if(plugin.playerHash.containsKey(player)){
-			sender.sendMessage(ChatColor.GREEN + "You have cancelled your registration, please try again.");
-			confirmed = true;
-			plugin.playerHash.remove(player);
-			return true;
+			if(plugin.emailHash.containsKey(player)){
+				sender.sendMessage(ChatColor.GOLD + "You have cancelled your registration.");
+				Bukkit.getServer().getScheduler().cancelTask(Integer.parseInt(plugin.taskIDHash.get(player)));
+				plugin.emailHash.remove(player);
+				plugin.passHash.remove(player);
+				plugin.taskIDHash.remove(player);
+				return true;
 			}
 			else{
 				sender.sendMessage(ChatColor.RED + "You do not have permissions to use this command");
@@ -89,19 +92,21 @@ public class Commands implements CommandExecutor {
 		 }
 	 
 	 public boolean confirmInfo(String[] info, final CommandSender sender){ //Sends confirmation message and initiates timeout
-		 sender.sendMessage(ChatColor.GREEN + "You have entered " + ChatColor.GOLD + info[0] + ChatColor.GREEN + " and " + ChatColor.GOLD + info[1] + ChatColor.GREEN + ". Is this correct? Type '" + ChatColor.BLUE + "/register confirm" + ChatColor.GREEN +"' to confirm or '" + ChatColor.BLUE + "/register cancel" + ChatColor.GREEN + "' to try again. This will time out in 20 seconds.");
-		Player player = (Player) sender;
-		 plugin.playerHash.put(player, "confirm");
-		 Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+		 sender.sendMessage(ChatColor.GREEN + "You have entered " + ChatColor.GOLD + info[0] + ChatColor.GREEN + " and " + ChatColor.GOLD + info[1] + ChatColor.GREEN + ". Is this correct? Type '" + ChatColor.BLUE + "/confirm" + ChatColor.GREEN +"' to accept or '" + ChatColor.BLUE + "/cancel" + ChatColor.GREEN + "' to try again. This will time out in 20 seconds.");
+		final Player player = (Player) sender;
+		 plugin.emailHash.put(player, info[0]);
+		 plugin.passHash.put(player, info[1]);
+		 int taskID = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 			    public void run() {
-			     if(confirmed = false){
-			    	 sender.sendMessage(ChatColor.RED + "You have not confirmed your registration. Please retart to try again.");
-			    	 return;
-			     }
+			    	sender.sendMessage(ChatColor.RED + "You have not confirmed your registration. Please try again.");
+					plugin.emailHash.remove(player);
+					plugin.passHash.remove(player);
+					plugin.taskIDHash.remove(player);
+			    	return;
 			    } //end void run()
 			   } //end bukkit start scheduler
 			   , 400L); 
-		 
+		 plugin.taskIDHash.put(player, Integer.toString(taskID));
 			   return true;
 	 }
 	 

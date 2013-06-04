@@ -10,6 +10,12 @@ commands:
     reg:
         description: allows users to enter email and password
         usage: /<command>
+    confirm:
+        description: used for confirming registration information
+        usage: /<command>
+    cancel:
+        description: used for cancelling registration
+        usage: /<command>
 permissions: 
     register.registered:
         description: Prevents registered members from re-registering
