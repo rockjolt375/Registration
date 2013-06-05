@@ -1,5 +1,9 @@
 package com.mythicacraft.registration.commands;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,6 +18,10 @@ import com.mythicacraft.registration.Registration;
 
 /* To do:
  *  - Database check that scans for duplicates of email/sendername
+ *  - Add MC user name to profile
+ *  - /register help
+ *  - registration email
+ *  - add information about logging in and modifying data on forums to confirm message
  */
 
 public class Commands implements CommandExecutor {
@@ -29,8 +37,6 @@ public class Commands implements CommandExecutor {
 		
 		if(commandLabel.equalsIgnoreCase("register") || commandLabel.equalsIgnoreCase("reg")){
 			if(!sender.hasPermission("register.registered")){
-				
-
 				
 				if(args.length != 2){ //If player did not enter /register [email] [password] command format
 					sender.sendMessage(ChatColor.RED + "Please enter a valid email and password by typing '/register [email] [password]'");
@@ -54,7 +60,20 @@ public class Commands implements CommandExecutor {
 		
 		if(commandLabel.equalsIgnoreCase("confirm")){ //If player confirms information, execute to PHP script
 			if(plugin.emailHash.containsKey(player)){
-				//Run php script shit
+				      try {
+				        URL phpUrl = new URL("http://www.mythicacraft.com/game2forum.php?username=" + sender.getName() + "&password=" + plugin.passHash.get(player) + "&email=" + plugin.emailHash.get(player));
+				        URLConnection urlCon = phpUrl.openConnection();
+				        BufferedReader br = new BufferedReader(
+				                                new InputStreamReader(
+				                                urlCon.getInputStream()));
+				        @SuppressWarnings("unused")
+						String line;
+
+				        while ((line = br.readLine()) != null) 
+				        br.close();
+				      } catch(Exception e) {
+				        // handle errors here...
+				      }
 				sender.sendMessage("Test message for confirming action");
 				Bukkit.getServer().getScheduler().cancelTask(Integer.parseInt(plugin.taskIDHash.get(player)));
 				plugin.emailHash.remove(player);
@@ -92,7 +111,7 @@ public class Commands implements CommandExecutor {
 		 }
 	 
 	 public boolean confirmInfo(String[] info, final CommandSender sender){ //Sends confirmation message and initiates timeout
-		 sender.sendMessage(ChatColor.GREEN + "You have entered " + ChatColor.GOLD + info[0] + ChatColor.GREEN + " and " + ChatColor.GOLD + info[1] + ChatColor.GREEN + ". Is this correct? Type '" + ChatColor.BLUE + "/confirm" + ChatColor.GREEN +"' to accept or '" + ChatColor.BLUE + "/cancel" + ChatColor.GREEN + "' to try again. This will time out in 20 seconds.");
+		 sender.sendMessage(ChatColor.GREEN + "You have entered " + ChatColor.GOLD + info[0] + ChatColor.GREEN + " and " + ChatColor.GOLD + info[1] + ChatColor.GREEN + ". Is this correct? Type '" + ChatColor.AQUA + "/confirm" + ChatColor.GREEN +"' to accept or '" + ChatColor.AQUA + "/cancel" + ChatColor.GREEN + "' to try again. This will time out in 20 seconds.");
 		final Player player = (Player) sender;
 		 plugin.emailHash.put(player, info[0]);
 		 plugin.passHash.put(player, info[1]);
