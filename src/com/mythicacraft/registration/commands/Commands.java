@@ -28,6 +28,8 @@ import com.mythicacraft.registration.Registration;
 public class Commands implements CommandExecutor {
 	
 	public Registration plugin;
+	
+	private String check;
 
 	 public Commands(Registration plugin) {
 	  this.plugin = plugin;
@@ -69,7 +71,13 @@ public class Commands implements CommandExecutor {
 			if(plugin.emailHash.containsKey(player)){
 				try { //Checks database for duplicate email/username
 					if(!duplicateCheck(sender.getName(), plugin.emailHash.get(player))){
-						sender.sendMessage(ChatColor.RED + "Your username or email already exist on the forum!");
+						if(check.equalsIgnoreCase("email")){
+						sender.sendMessage(ChatColor.RED + "Your email already exists on the forum! Please try again with another email or log in to the forums to modify your Minecraft username in your profile.");
+						}
+						else{
+						sender.sendMessage(ChatColor.RED + "Your username is already registered on the forum! If you believe this is an error - please contact a mod using '/helpme'.");
+						}
+						Bukkit.getServer().getScheduler().cancelTask(Integer.parseInt(plugin.taskIDHash.get(player))); //Cancels timeout task
 						return true;
 					}
 				} catch (SQLException e1) {
@@ -102,7 +110,7 @@ public class Commands implements CommandExecutor {
 				//Schedules automatic sync with forums 10 seconds after registration confirmation
 				Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 					    public void run() {
-					    	player.performCommand("sync");	
+					    	player.performCommand("cbsync");	
 					    } //end void run()
 					   } //end bukkit start scheduler
 					   , 100L); 
@@ -170,17 +178,19 @@ public class Commands implements CommandExecutor {
 				if(!userSelect.next()){
 					emailSelect.close();
 					userSelect.close();
-					conn.close();	
+					conn.close();
 					return true;
 				}
 				emailSelect.close();
 				userSelect.close();
 				conn.close();	
+				check = "user";
 				return false;
 			}
 			emailSelect.close();
 			userSelect.close();
-			conn.close();			
+			conn.close();
+			check = "email";
 			return false;
 		}
 	 
